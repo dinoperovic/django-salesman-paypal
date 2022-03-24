@@ -51,19 +51,19 @@ class PayPalPayment(PaymentMethod):
             path('capture/<order_id>/', self.capture_view, name='paypal-capture'),
         ]
 
-    def basket_payment(self, basket: BaseBasket, request: Request) -> dict:
+    def basket_payment(self, basket: BaseBasket, request: HttpRequest) -> dict:
         """
         Create order for Basket.
         """
         return self.process_payment(basket, request)
 
-    def order_payment(self, order: BaseOrder, request: Request) -> dict:
+    def order_payment(self, order: BaseOrder, request: HttpRequest) -> dict:
         """
         Pay for for an existing Order.
         """
         return self.process_payment(order, request)
 
-    def process_payment(self, obj: BasketOrOrder, request: Request) -> dict:
+    def process_payment(self, obj: BasketOrOrder, request: HttpRequest) -> dict:
         """
         Processs payment for either the Basket or Order.
         """
@@ -74,7 +74,7 @@ class PayPalPayment(PaymentMethod):
             logger.error(e)
             raise PaymentError(str(e))
 
-    def create_paypal_order(self, obj: BasketOrOrder, request: Request) -> Result:
+    def create_paypal_order(self, obj: BasketOrOrder, request: HttpRequest) -> Result:
         """
         Create a PayPal order and return the result.
         """
@@ -84,7 +84,7 @@ class PayPalPayment(PaymentMethod):
         paypal_response = self.get_paypal_client().execute(paypal_request)
         return paypal_response.result
 
-    def get_paypal_order_data(self, obj: BasketOrOrder, request: Request) -> dict:
+    def get_paypal_order_data(self, obj: BasketOrOrder, request: HttpRequest) -> dict:
         """
         Returns PayPal order create request data.
 
@@ -98,7 +98,7 @@ class PayPalPayment(PaymentMethod):
             'application_context': self.get_paypal_app_context_data(obj, request),
         }
 
-    def get_paypal_payer_data(self, obj: BasketOrOrder, request: Request) -> dict:
+    def get_paypal_payer_data(self, obj: BasketOrOrder, request: HttpRequest) -> dict:
         """
         Returns PayPal payer data.
 
@@ -119,7 +119,7 @@ class PayPalPayment(PaymentMethod):
     def get_paypal_purchase_unit_data(
         self,
         obj: BasketOrOrder,
-        request: Request,
+        request: HttpRequest,
     ) -> dict:
         """
         Returns PayPal order application_context data.
@@ -150,7 +150,7 @@ class PayPalPayment(PaymentMethod):
     def get_paypal_item_data(
         self,
         item: BasketItemOrOrderItem,
-        request: Request,
+        request: HttpRequest,
     ) -> dict:
         """
         Returns PayPal order purchase unit item data.
@@ -171,7 +171,7 @@ class PayPalPayment(PaymentMethod):
     def get_paypal_shipping_data(
         self,
         obj: BasketOrOrder,
-        request: Request,
+        request: HttpRequest,
     ) -> dict:
         """
         Returns PayPal order purchase unit shipping data.
@@ -188,7 +188,7 @@ class PayPalPayment(PaymentMethod):
     def get_paypal_app_context_data(
         self,
         obj: BasketOrOrder,
-        request: Request,
+        request: HttpRequest,
     ) -> Optional[dict]:
         """
         Returns PayPal order application context data.
@@ -201,7 +201,7 @@ class PayPalPayment(PaymentMethod):
             'cancel_url': request.build_absolute_uri(reverse('paypal-cancel')),
         }
 
-    def get_currency(self, request: Request) -> str:
+    def get_currency(self, request: HttpRequest) -> str:
         """
         Returns ISO currency for the given request.
         """
@@ -270,7 +270,7 @@ class PayPalPayment(PaymentMethod):
     @classmethod
     @method_decorator(api_view(['POST']))
     @method_decorator(renderer_classes([JSONRenderer]))
-    def capture_view(cls, request: Request, order_id: int) -> HttpResponse:
+    def capture_view(cls, request: Request, order_id: int) -> Response:
         """
         Order capture view.
         """
