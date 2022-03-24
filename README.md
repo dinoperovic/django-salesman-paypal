@@ -7,7 +7,6 @@
 
 [PayPal](https://www.paypal.com/) payment integration for [Salesman](https://github.com/dinoperovic/django-salesman).
 
-
 ## Installation
 
 Install the package using pip:
