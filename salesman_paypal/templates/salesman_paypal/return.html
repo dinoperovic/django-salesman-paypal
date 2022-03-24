@@ -1,0 +1,4 @@
+<h1>PayPal payment approved</h1>
+<form action="{% url 'paypal-capture' request.GET.token %}" method="post">
+<button>Capture payment</button>
+</form>
