@@ -14,7 +14,8 @@ from paypalcheckoutsdk.core import (
     SandboxEnvironment,
 )
 from paypalcheckoutsdk.orders import OrdersCaptureRequest, OrdersCreateRequest
-from paypalhttp import HttpError as PaypalHttpError
+from paypalcheckoutsdk.payments import CapturesRefundRequest
+from paypalhttp import HttpError as PayPalHttpError
 from paypalhttp.http_response import Result
 from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer
@@ -23,7 +24,7 @@ from rest_framework.response import Response
 from salesman.basket.models import BaseBasket, BaseBasketItem
 from salesman.checkout.payment import PaymentError, PaymentMethod
 from salesman.core.utils import get_salesman_model
-from salesman.orders.models import BaseOrder, BaseOrderItem
+from salesman.orders.models import BaseOrder, BaseOrderItem, BaseOrderPayment
 
 from .conf import app_settings
 
@@ -70,7 +71,7 @@ class PayPalPayment(PaymentMethod):
         try:
             paypal_order = self.create_paypal_order(obj, request)
             return paypal_order.dict()
-        except PaypalHttpError as e:
+        except PayPalHttpError as e:
             logger.error(e)
             raise PaymentError(str(e))
 
@@ -122,7 +123,7 @@ class PayPalPayment(PaymentMethod):
         request: HttpRequest,
     ) -> dict:
         """
-        Returns PayPal order application_context data.
+        Returns PayPal order purchase unit data.
 
         See available data to be set in PayPal:
         https://developer.paypal.com/api/orders/v2/#definition-purchase_unit_request
@@ -153,7 +154,7 @@ class PayPalPayment(PaymentMethod):
         request: HttpRequest,
     ) -> dict:
         """
-        Returns PayPal order purchase unit item data.
+        Returns PayPal order item data.
 
         See available data to be set in PayPal:
         https://developer.paypal.com/api/orders/v2/#definition-item
@@ -174,7 +175,7 @@ class PayPalPayment(PaymentMethod):
         request: HttpRequest,
     ) -> dict:
         """
-        Returns PayPal order purchase unit shipping data.
+        Returns PayPal order shipping data.
 
         See available data to be set in PayPal:
         https://developer.paypal.com/api/orders/v2/#definition-shipping_detail
@@ -201,6 +202,19 @@ class PayPalPayment(PaymentMethod):
             'cancel_url': request.build_absolute_uri(reverse('paypal-cancel')),
         }
 
+    def refund_payment(self, payment: BaseOrderPayment) -> bool:
+        """
+        Refund payment on PayPal.
+        """
+        paypal_request = CapturesRefundRequest(payment.transaction_id)
+        paypal_request.prefer('return=representation')
+        try:
+            self.get_paypal_client().execute(paypal_request)
+        except PayPalHttpError as e:
+            logger.error(e)
+            return False
+        return True
+
     def get_currency(self, request: HttpRequest) -> str:
         """
         Returns ISO currency for the given request.
@@ -209,7 +223,7 @@ class PayPalPayment(PaymentMethod):
 
     def get_reference(self, obj: BasketOrOrder) -> str:
         """
-        Returns a Stripe reference ID for the given object used to identify the session.
+        Returns a reference ID for the given object used to identify the PayPal order.
         """
         if isinstance(obj, BaseBasket):
             return f'basket_{obj.id}'
@@ -218,7 +232,7 @@ class PayPalPayment(PaymentMethod):
     @classmethod
     def parse_reference(cls, reference: str) -> tuple[Optional[str], Optional[str]]:
         """
-        Parses the Stripe reference ID returning the object kind and ID.
+        Parses the reference ID returning the object kind and ID.
         """
         try:
             kind, id = reference.split('_')
@@ -278,7 +292,7 @@ class PayPalPayment(PaymentMethod):
             paypal_request = OrdersCaptureRequest(order_id)
             paypal_request.prefer('return=representation')
             paypal_response = cls.get_paypal_client().execute(paypal_request)
-        except PaypalHttpError as e:
+        except PayPalHttpError as e:
             logger.error(e)
             error = json.loads(e.message)
             return Response(error, status=400)
@@ -316,10 +330,10 @@ class PayPalPayment(PaymentMethod):
             return Response({'detail': "Invalid paypal reference"}, status=400)
 
         # Capture payment on order.
-        paypal_payment = paypal_purchase_unit.payments.captures[0]
+        paypal_capture = paypal_purchase_unit.payments.captures[0]
         order.pay(
-            amount=Decimal(paypal_payment.amount.value),
-            transaction_id=paypal_payment.id,
+            amount=Decimal(paypal_capture.amount.value),
+            transaction_id=paypal_capture.id,
             payment_method=cls.identifier,
         )
 
