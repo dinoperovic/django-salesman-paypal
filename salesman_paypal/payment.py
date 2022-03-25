@@ -207,7 +207,7 @@ class PayPalPayment(PaymentMethod):
         Refund payment on PayPal.
         """
         paypal_request = CapturesRefundRequest(payment.transaction_id)
-        paypal_request.prefer('return=representation')
+        paypal_request.prefer('return=minimal')
         try:
             self.get_paypal_client().execute(paypal_request)
         except PayPalHttpError as e:
