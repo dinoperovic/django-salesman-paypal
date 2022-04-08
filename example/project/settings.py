@@ -17,7 +17,7 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Insert package to path
+# Insert package to path.
 sys.path.insert(0, str(BASE_DIR))
 sys.path.insert(0, os.path.dirname(str(BASE_DIR)))
 
