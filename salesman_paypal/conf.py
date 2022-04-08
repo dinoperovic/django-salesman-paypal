@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 
 class AppSettings:
@@ -9,28 +9,28 @@ class AppSettings:
         """
         PayPal client ID.
         """
-        return self._required_setting('SALESMAN_PAYPAL_CLIENT_ID')
+        return str(self._required_setting("SALESMAN_PAYPAL_CLIENT_ID"))
 
     @property
     def SALESMAN_PAYPAL_CLIENT_SECRET(self) -> str:
         """
         PayPal client secret.
         """
-        return self._required_setting('SALESMAN_PAYPAL_CLIENT_SECRET')
+        return str(self._required_setting("SALESMAN_PAYPAL_CLIENT_SECRET"))
 
     @property
     def SALESMAN_PAYPAL_SANDBOX_MODE(self) -> bool:
         """
         Enable PayPal sandbox mode for development.
         """
-        return self._setting('SALESMAN_PAYPAL_SANDBOX_MODE', False)
+        return bool(self._setting("SALESMAN_PAYPAL_SANDBOX_MODE", False))
 
     @property
     def SALESMAN_PAYPAL_PAYMENT_LABEL(self) -> str:
         """
         Payment method label used when displayed in the basket.
         """
-        return self._setting('SALESMAN_PAYPAL_DEFAULT_CURRENCY', 'Pay with PayPal')
+        return str(self._setting("SALESMAN_PAYPAL_DEFAULT_CURRENCY", "Pay with PayPal"))
 
     @property
     def SALESMAN_PAYPAL_DEFAULT_CURRENCY(self) -> str:
@@ -38,28 +38,28 @@ class AppSettings:
         Default ISO currency used for payments, must be set to a valid PayPal currency.
         https://developer.paypal.com/docs/reports/reference/paypal-supported-currencies/
         """
-        return self._setting('SALESMAN_PAYPAL_DEFAULT_CURRENCY', 'USD')
+        return str(self._setting("SALESMAN_PAYPAL_DEFAULT_CURRENCY", "USD"))
 
     @property
-    def SALESMAN_PAYPAL_RETURN_URL(self) -> Optional[str]:
+    def SALESMAN_PAYPAL_RETURN_URL(self) -> str:
         """
         URL to redirect to when PayPal payment is approved.
         """
-        return self._setting('SALESMAN_PAYPAL_RETURN_URL')
+        return str(self._setting("SALESMAN_PAYPAL_RETURN_URL", default=""))
 
     @property
-    def SALESMAN_PAYPAL_CANCEL_URL(self) -> Optional[str]:
+    def SALESMAN_PAYPAL_CANCEL_URL(self) -> str:
         """
         URL to redirect to when PayPal payment is cancelled.
         """
-        return self._setting('SALESMAN_PAYPAL_CANCEL_URL')
+        return str(self._setting("SALESMAN_PAYPAL_CANCEL_URL", default=""))
 
     @property
     def SALESMAN_PAYPAL_PAID_STATUS(self) -> str:
         """
         Default paid status for fullfiled orders.
         """
-        return self._setting('SALESMAN_PAYPAL_PAID_STATUS', 'PROCESSING')
+        return str(self._setting("SALESMAN_PAYPAL_PAID_STATUS", "PROCESSING"))
 
     def _setting(self, name: str, default: Any = None) -> Any:
         from django.conf import settings

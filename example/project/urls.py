@@ -19,14 +19,14 @@ from django.urls import include, path
 from django.views.generic import TemplateView
 
 urlpatterns = [
-    path('api/', include('salesman.urls')),
-    path('admin/', admin.site.urls),
+    path("api/", include("salesman.urls")),
+    path("admin/", admin.site.urls),
     path(
-        'checkout.html',
+        "checkout.html",
         TemplateView.as_view(
-            template_name='checkout.html',
+            template_name="checkout.html",
             extra_context={
-                'SALESMAN_PAYPAL_CLIENT_ID': settings.SALESMAN_PAYPAL_CLIENT_ID,
+                "SALESMAN_PAYPAL_CLIENT_ID": settings.SALESMAN_PAYPAL_CLIENT_ID,
             },
         ),
     ),
