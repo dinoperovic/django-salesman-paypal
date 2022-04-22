@@ -30,7 +30,7 @@ class AppSettings:
         """
         Payment method label used when displayed in the basket.
         """
-        return str(self._setting("SALESMAN_PAYPAL_DEFAULT_CURRENCY", "Pay with PayPal"))
+        return str(self._setting("SALESMAN_PAYPAL_PAYMENT_LABEL", "Pay with PayPal"))
 
     @property
     def SALESMAN_PAYPAL_DEFAULT_CURRENCY(self) -> str:
