@@ -9,6 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import URLPattern, URLResolver, path, reverse
 from django.utils.decorators import method_decorator
+from django.utils.text import Truncator
 from paypalcheckoutsdk.core import (
     LiveEnvironment,
     PayPalEnvironment,
@@ -23,17 +24,16 @@ from rest_framework.decorators import api_view, renderer_classes
 from rest_framework.renderers import JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
-from salesman.basket.models import BaseBasket, BaseBasketItem
+from salesman.basket.models import BaseBasket
 from salesman.checkout.payment import PaymentError, PaymentMethod
 from salesman.core.utils import get_salesman_model
-from salesman.orders.models import BaseOrder, BaseOrderItem, BaseOrderPayment
+from salesman.orders.models import BaseOrder, BaseOrderPayment
 
 from .conf import app_settings
 
 logger = logging.getLogger(__name__)
 
 BasketOrOrder = TypeVar("BasketOrOrder", BaseBasket, BaseOrder)
-BasketItemOrOrderItem = TypeVar("BasketItemOrOrderItem", BaseBasketItem, BaseOrderItem)
 
 
 class PayPalPayment(PaymentMethod):  # type: ignore
@@ -160,37 +160,42 @@ class PayPalPayment(PaymentMethod):  # type: ignore
                 "breakdown": {
                     "item_total": {
                         "currency_code": currency,
-                        "value": str(obj.subtotal),
+                        "value": str(obj.total),
                     },
                 },
             },
             "custom_id": self.get_reference(obj),
-            "items": [
-                self.get_paypal_item_data(item, request) for item in obj.get_items()
-            ],
+            "items": self.get_paypal_items_data(obj, request),
             "shipping": self.get_paypal_shipping_data(obj, request),
         }
 
-    def get_paypal_item_data(
+    def get_paypal_items_data(
         self,
-        item: BasketItemOrOrderItem,
+        obj: BasketOrOrder,
         request: HttpRequest,
-    ) -> dict[str, Any]:
+    ) -> list[dict[str, Any]]:
         """
-        Returns PayPal order item data.
+        Returns PayPal order items data.
 
         See available data to be set in PayPal:
         https://developer.paypal.com/api/orders/v2/#definition-item
         """
-        return {
-            "name": f"{item.quantity}x {item.name}",
-            "unit_amount": {
-                "currency_code": self.get_currency(request),
-                "value": str(item.total),
-            },
-            "quantity": "1",
-            "sku": item.code,
-        }
+
+        return [
+            {
+                "name": f"Purchase {len(obj.get_items())} items",
+                "unit_amount": {
+                    "currency_code": self.get_currency(request),
+                    "value": str(obj.total),
+                },
+                "quantity": "1",
+                "description": Truncator(
+                    ", ".join(
+                        [f"{item.quantity}x {item.name}" for item in obj.get_items()]
+                    )
+                ).chars(127),
+            }
+        ]
 
     def get_paypal_shipping_data(
         self,
