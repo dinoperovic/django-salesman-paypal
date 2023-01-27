@@ -1,7 +1,7 @@
 # Salesman PayPal
 
 [![PyPI](https://img.shields.io/pypi/v/django-salesman-paypal)](https://pypi.org/project/django-salesman-paypal/)
-[![Test](https://img.shields.io/github/workflow/status/dinoperovic/django-salesman-paypal/Test/master)](https://github.com/dinoperovic/django-salesman-paypal/actions?query=workflow:Test)
+[![Test](https://github.com/dinoperovic/django-salesman-paypal/actions/workflows/test.yml/badge.svg)](https://github.com/dinoperovic/django-salesman-paypal/actions/workflows/test.yml)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/django-salesman-paypal)](https://pypi.org/project/django-salesman-paypal/)
 [![PyPI - Django Version](https://img.shields.io/pypi/djversions/django-salesman-paypal)](https://pypi.org/project/django-salesman-paypal/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
