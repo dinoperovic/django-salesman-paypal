@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.5] - 2022-04-25
 ### Changed
 - Updated `line_items` to return a single basket/order by default
+## [0.1.5] - 2023-02-23
+### Changed
+- Removed Django from dependecies
 
 ## [0.1.4] - 2022-04-22
 ### Fixed
